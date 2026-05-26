@@ -70,6 +70,7 @@ module = [
     "pydantic_settings",
     "boto3",
     "botocore",
+    "botocore.config",
     "websockets",
 ]
 ignore_missing_imports = true
