@@ -48,6 +48,30 @@ strict = true
 warn_unused_ignores = true
 warn_redundant_casts = true
 
+[[tool.mypy.overrides]]
+module = [
+    "fastapi",
+    "starlette",
+    "uvicorn",
+    "acp.*",
+    "acp",
+    "pytest",
+    "aiosqlite",
+    "pydantic_settings",
+    "boto3",
+    "botocore",
+    "websockets",
+]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_decorators = false
+
+[[tool.mypy.overrides]]
+module = "rogue_gateway.main"
+disallow_untyped_decorators = false
+
 [tool.bandit]
 exclude_dirs = ["tests"]
 
