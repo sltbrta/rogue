@@ -13,34 +13,18 @@ import os
 import uuid
 from collections.abc import AsyncIterator
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
-try:
-    from acp import PROTOCOL_VERSION, spawn_agent_process, text_block
-    from acp.interfaces import Client as ACPClientProtocol
-    from acp.schema import (
-        ClientCapabilities,
-        FileSystemCapabilities,
-        Implementation,
-    )
-
-    _ACP_AVAILABLE = True
-except ImportError:
-    _ACP_AVAILABLE = False
-
-    class _Missing:
-        """Placeholder for missing acp SDK — wired in Phase A."""
-
-        def __getattr__(self, name: str) -> None:
-            return None
-
-    PROTOCOL_VERSION = ""
-    spawn_agent_process = _Missing()
-    text_block = _Missing()
-    ACPClientProtocol = object
-    ClientCapabilities = _Missing()
-    FileSystemCapabilities = _Missing()
-    Implementation = _Missing()
+from acp import PROTOCOL_VERSION, spawn_agent_process, text_block
+from acp.exceptions import RequestError
+from acp.interfaces import Client as ACPClientProtocol
+from acp.schema import (
+    ClientCapabilities,
+    DeniedOutcome,
+    FileSystemCapabilities,
+    Implementation,
+    RequestPermissionResponse,
+)
 
 from rogue_gateway.adapters.registry import CLIConfig
 
@@ -76,7 +60,9 @@ class ACPSession:
                         if os.environ.get(var):
                             env[var] = os.environ[var]
 
-        self._context = spawn_agent_process(client, command, *args, cwd=self.project_path, env=env)
+        self._context = spawn_agent_process(
+            cast(ACPClientProtocol, client), command, *args, cwd=self.project_path, env=env
+        )
         self._connection, _process = await self._context.__aenter__()
 
         await self._connection.initialize(
@@ -210,32 +196,19 @@ class _BridgeClient:
     async def request_permission(
         self, options: list[object], session_id: str, tool_call: object, **kwargs: Any
     ) -> Any:
-        if _ACP_AVAILABLE:
-            from acp.schema import DeniedOutcome, RequestPermissionResponse
-
-            return RequestPermissionResponse(outcome=DeniedOutcome(outcome="cancelled"))
-        return None
+        return RequestPermissionResponse(outcome=DeniedOutcome(outcome="cancelled"))
 
     def on_connect(self, _conn: object) -> None:
         return None
 
     async def write_text_file(self, **kwargs: Any) -> None:
-        if _ACP_AVAILABLE:
-            from acp.exceptions import RequestError
-
-            raise RequestError.invalid_request({"operation": "fs_write_text_file_disabled"})
+        raise RequestError.invalid_request({"operation": "fs_write_text_file_disabled"})
 
     async def read_text_file(self, **kwargs: Any) -> None:
-        if _ACP_AVAILABLE:
-            from acp.exceptions import RequestError
-
-            raise RequestError.invalid_request({"operation": "fs_read_text_file_disabled"})
+        raise RequestError.invalid_request({"operation": "fs_read_text_file_disabled"})
 
     async def create_terminal(self, **kwargs: Any) -> None:
-        if _ACP_AVAILABLE:
-            from acp.exceptions import RequestError
-
-            raise RequestError.invalid_request({"operation": "terminal_create_disabled"})
+        raise RequestError.invalid_request({"operation": "terminal_create_disabled"})
 
     async def terminal_output(self, **kwargs: Any) -> None:
         pass
@@ -250,11 +223,7 @@ class _BridgeClient:
         pass
 
     async def ext_method(self, method: str, params: dict[str, Any]) -> dict[str, Any]:
-        if _ACP_AVAILABLE:
-            from acp.exceptions import RequestError
-
-            raise RequestError.method_not_found(method)
-        return {}
+        raise RequestError.method_not_found(method)
 
     async def ext_notification(self, method: str, params: dict[str, Any]) -> None:
         logger.debug("extension_notification method=%s", method)
