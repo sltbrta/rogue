@@ -1,0 +1,22 @@
+# Codified anti-pattern fix from sentra-pi on 2026-05-24:
+# keep Prettier away from Biome-owned paths so formatters do not fight.
+#
+# Project-specific Biome-owned packages should be listed here, for example:
+# packages/sentra-orchestrator/**
+
+node_modules/
+dist/
+build/
+coverage/
+.next/
+
+# Generated files and lockfiles.
+**/_generated/**
+**/*.generated.ts
+**/*.generated.js
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+bun.lock
+bun.lockb
+uv.lock

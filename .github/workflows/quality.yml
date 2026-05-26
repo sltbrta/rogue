@@ -1,0 +1,137 @@
+# Layer 3 of ~/.claude/rules/quality-toolchain-pre-merge.md - CI gate, blocks merge per Ruleset.
+# Hermetic: lockfiles REQUIRED; no fallback to mutable installs (per hermetic-builds.md).
+name: quality
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  python-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect Python project
+        id: python-project
+        run: |
+          if [ -f pyproject.toml ]; then
+            echo "present=true" >>"$GITHUB_OUTPUT"
+          else
+            echo "present=false" >>"$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Python (pinned from .python-version)
+        if: steps.python-project.outputs.present == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: ".python-version"
+
+      - name: Set up uv
+        if: steps.python-project.outputs.present == 'true'
+        uses: astral-sh/setup-uv@v5
+
+      - name: Verify uv.lock present (hermetic gate)
+        if: steps.python-project.outputs.present == 'true'
+        run: |
+          if [ ! -f uv.lock ]; then
+            echo "::error::No uv.lock found. Run 'uv sync' locally and commit uv.lock before opening a PR (per hermetic-builds.md)."
+            exit 1
+          fi
+
+      - name: Install Python quality stack (frozen)
+        if: steps.python-project.outputs.present == 'true'
+        run: uv sync --frozen --all-extras --dev
+
+      - name: Ruff lint
+        if: steps.python-project.outputs.present == 'true'
+        run: uv run ruff check .
+
+      - name: Ruff format check
+        if: steps.python-project.outputs.present == 'true'
+        run: uv run ruff format --check .
+
+      - name: Mypy type check
+        if: steps.python-project.outputs.present == 'true'
+        run: |
+          if find . -type f -name '*.py' \
+            -not -path './.venv/*' \
+            -not -path './venv/*' \
+            -not -path './.git/*' \
+            | grep -q .; then
+            uv run mypy . --ignore-missing-imports
+          else
+            echo "No Python files; skipping mypy."
+          fi
+
+      - name: Bandit security scan
+        if: steps.python-project.outputs.present == 'true'
+        run: |
+          if find . -type f -name '*.py' \
+            -not -path './.venv/*' \
+            -not -path './venv/*' \
+            -not -path './.git/*' \
+            | grep -q .; then
+            uv run bandit -r . -c pyproject.toml -q
+          else
+            echo "No Python files; skipping bandit."
+          fi
+
+      - name: Pip-audit dependency vulnerabilities
+        if: steps.python-project.outputs.present == 'true'
+        run: uv run pip-audit
+        continue-on-error: true  # TEMPLATE: remove continue-on-error once project's real deps are declared
+
+  ts-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect TS/JS project
+        id: ts-project
+        run: |
+          if [ -f package.json ]; then
+            echo "present=true" >>"$GITHUB_OUTPUT"
+          else
+            echo "present=false" >>"$GITHUB_OUTPUT"
+          fi
+
+      - name: Verify lockfile present (hermetic gate)
+        if: steps.ts-project.outputs.present == 'true'
+        run: |
+          if [ ! -f bun.lockb ] && [ ! -f bun.lock ]; then
+            echo "::error::No bun lockfile found. Run 'bun install' locally and commit bun.lockb (per hermetic-builds.md)."
+            exit 1
+          fi
+
+      - name: Set up Node (pinned from .nvmrc)
+        if: steps.ts-project.outputs.present == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Set up Bun
+        if: steps.ts-project.outputs.present == 'true'
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install JS deps (frozen)
+        if: steps.ts-project.outputs.present == 'true'
+        run: bun install --frozen-lockfile
+
+      - name: Biome CI (lint + format + organize-imports, no fix)
+        if: steps.ts-project.outputs.present == 'true'
+        run: bunx @biomejs/biome@2.4.15 ci .
+
+      - name: TypeScript type check
+        if: steps.ts-project.outputs.present == 'true'
+        run: |
+          if [ -f tsconfig.json ]; then
+            bunx tsc --noEmit
+          else
+            echo "No tsconfig.json; extend tsconfig.base.json before enabling TS typecheck."
+          fi

@@ -1,0 +1,11 @@
+# Default code owner — @sltbrta auto-requested on every PR.
+# Adjust per directory if multiple owners or specific domain experts.
+#
+# Syntax: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+*       @sltbrta
+
+# Examples (uncomment + adjust per project):
+# /src/auth/           @sltbrta @security-lead
+# /docs/               @sltbrta @docs-team
+# /.github/            @sltbrta

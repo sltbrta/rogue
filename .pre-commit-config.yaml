@@ -1,0 +1,32 @@
+# Layer 1 of ~/.claude/rules/quality-toolchain-pre-merge.md.
+# Activate per-project by uncommenting the stacks you use.
+default_install_hook_types:
+  - pre-commit
+  - commit-msg
+
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.14
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  # Python type checking. Uncomment when the project has typed Python sources.
+  # - repo: https://github.com/pre-commit/mirrors-mypy
+  #   rev: v1.13.0
+  #   hooks:
+  #     - id: mypy
+
+  # Python security scan. Uncomment when pyproject.toml bandit config is active.
+  # - repo: https://github.com/PyCQA/bandit
+  #   rev: 1.7.10
+  #   hooks:
+  #     - id: bandit
+  #       args: [-c, pyproject.toml]
+
+  # TS/JS lint + format. Uncomment when package.json dev deps include Biome.
+  # - repo: https://github.com/biomejs/pre-commit
+  #   rev: v2.4.15
+  #   hooks:
+  #     - id: biome-check

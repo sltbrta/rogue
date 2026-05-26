@@ -1,0 +1,34 @@
+# CodeRabbit config — per `~/.claude/rules/greptile-pr-gate.md` (2026-05-23 workflow).
+# Auto-review fires only on draft → ready-for-review transition.
+# No per-commit auto-incremental noise.
+
+language: "en-US"
+
+reviews:
+  auto_review:
+    enabled: true
+    drafts: false            # NEVER review drafts — keeps iteration silent
+  auto_incremental_review: false  # NEVER re-review on subsequent pushes — gate only
+  request_changes_workflow: false
+
+  # Profile / personality — defaults are fine for most projects.
+  profile: "chill"
+
+  # Path filters — adjust per project.
+  # path_filters:
+  #   - "!docs/**"
+  #   - "!*.md"
+
+  # Tools — keep CR's built-in linters on.
+  tools:
+    ruff:
+      enabled: true
+    markdownlint:
+      enabled: true
+    yamllint:
+      enabled: true
+    actionlint:
+      enabled: true
+
+chat:
+  auto_reply: true

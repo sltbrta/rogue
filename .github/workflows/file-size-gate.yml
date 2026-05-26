@@ -1,0 +1,21 @@
+# File-size gate — per ~/.claude/rules/code-modularity-standards.md
+# Enforces 500-line file cap. Allow-list at .file-size-allow-list (one path per line).
+name: file-size-gate
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  size-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check file sizes
+        run: bash scripts/check-file-size.sh

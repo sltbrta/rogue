@@ -1,0 +1,73 @@
+# Template Python project metadata.
+# Implements ~/.claude/rules/hermetic-builds.md by pinning Python via
+# .python-version and requiring Python 3.13+.
+[project]
+name = "replace-me-at-bootstrap"
+version = "0.0.0"
+requires-python = ">=3.13"
+dependencies = []
+
+# Template repos are not packages until a project opts in.
+# Implements ~/.claude/rules/monorepo-strategy.md and keeps uv bootstrap light.
+[tool.uv]
+package = false
+
+# Shared Python quality dependencies for Layer 1/2/3 gates.
+# Implements ~/.claude/rules/quality-toolchain-pre-merge.md.
+[dependency-groups]
+# Exact pins (==) for hermetic reproducibility per ~/.claude/rules/hermetic-builds.md.
+# Mirrors package.json devDependencies style. Bump deliberately via PR + uv lock.
+# Versions verified current on PyPI as of 2026-05-25.
+dev = [
+  "bandit[toml]==1.9.4",
+  "mypy==2.1.0",
+  "pip-audit==2.10.0",
+  "pytest==9.0.3",
+  "ruff==0.15.14",
+]
+
+# Ruff is the canonical Python linter + formatter.
+# Implements ~/.claude/rules/code-modularity-standards.md.
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+# Rule families cover syntax, imports, naming, pylint-style size caps,
+# complexity, bugbear, pyupgrade, security, and Ruff-specific checks.
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "PLR", "C90", "B", "UP", "S", "RUF"]
+ignore = []
+
+# Cyclomatic complexity hard cap from code-modularity-standards.md.
+[tool.ruff.lint.mccabe]
+max-complexity = 15
+
+# Function shape caps from code-modularity-standards.md.
+[tool.ruff.lint.pylint]
+max-args = 6
+max-branches = 12
+max-statements = 80
+max-returns = 6
+
+# Tests may assert and use stable fixture constants.
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "PLR2004"]
+
+# Strict typing by default; projects can add scoped overrides with comments.
+# Implements ~/.claude/rules/quality-toolchain-pre-merge.md.
+[tool.mypy]
+python_version = "3.13"
+strict = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+
+# Bandit scans production Python; tests are excluded because asserts and
+# fixtures intentionally trigger noisy security patterns.
+[tool.bandit]
+exclude_dirs = ["tests"]
+
+# Pytest defaults keep output terse while rejecting accidental marker typos.
+# Implements ~/.claude/rules/testing-pyramid.md.
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra -q --strict-markers"

@@ -1,0 +1,13 @@
+# .file-size-allow-list - per ~/.claude/rules/code-modularity-standards.md "Allow-list discipline"
+#
+# One path per line. Each entry MUST be preceded or followed by a comment
+# explaining the legitimate exception: generated code, large data table,
+# format-required snapshot, composer shell, or irreducible single function.
+#
+# Re-audited every 6 weeks; creep is anti-pattern.
+#
+# Examples (commented out - uncomment + adjust per-project as needed):
+# packages/runtime/_generated/grpc_stubs.py
+# gRPC codegen output; do not edit.
+# packages/data/icd10_codes.py
+# ICD-10 code table; data-only, ~3K lines.
