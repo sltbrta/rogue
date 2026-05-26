@@ -1,7 +1,7 @@
 {
-  "name": "REPLACE-ME-AT-BOOTSTRAP",
+  "name": "rogue",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "packageManager": "bun@1.3.14",
   "engines": {
@@ -15,8 +15,8 @@
   "scripts": {
     "lint": "biome check .",
     "format": "biome format --write .",
-    "typecheck": "tsc --noEmit",
-    "test": "echo 'configure per-project'"
+    "typecheck": "echo typecheck: no TS packages yet",
+    "test": "echo test: run per-package"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.15",

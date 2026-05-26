@@ -1,0 +1,15 @@
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "./Dockerfile"
+
+[deploy]
+numReplicas = 1
+startCommand = "python -m uvicorn rogue_gateway.main:app --host 0.0.0.0 --port ${PORT:-8787}"
+healthcheckPath = "/health"
+
+[service]
+port = 8787
+
+[variables]
+ROGUE_PORT = "8787"
+GATEWAY_ID = "railway-cloud"
