@@ -26,6 +26,7 @@ dev = [
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+exclude = [".build", ".venv", ".git", "__pycache__", "node_modules"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "PLR", "C90", "B", "UP", "S", "RUF"]

@@ -4,7 +4,7 @@ import SwiftUI
 import SwiftData
 
 @Observable
-final class SessionManager {
+final class SessionManager: @unchecked Sendable {
     var threads: [Thread] = []
     var activeSessionID: String?
 
@@ -67,7 +67,7 @@ struct ChatMessage: Identifiable {
     var content: String
     var bubbleType: String
     var toolName: String?
-    var toolArgs: [String: Any]?
+    var toolArgs: [String: String]?
     var timestamp = Date()
 
     enum Role { case user, assistant, system }

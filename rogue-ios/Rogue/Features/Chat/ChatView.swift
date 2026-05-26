@@ -6,6 +6,7 @@ struct ChatView: View {
     let thread: Thread
     @Environment(GatewayConnector.self) private var connector
     @State private var viewModel: ChatViewModel?
+    @State private var inputText = ""
 
     var body: some View {
         VStack(spacing: 0) {
@@ -34,10 +35,10 @@ struct ChatView: View {
                 }
 
                 InputBar(
-                    text: $vm.inputText,
-                    isStreaming: vm.isStreaming,
-                    onSend: { Task { await vm.sendMessage() } },
-                    onCancel: { vm.cancel() }
+                    text: $inputText,
+                    isStreaming: viewModel?.isStreaming ?? false,
+                    onSend: { Task { await viewModel?.sendMessage(inputText); inputText = "" } },
+                    onCancel: { viewModel?.cancel() }
                 )
             } else {
                 ProgressView().tint(.accentGreen)

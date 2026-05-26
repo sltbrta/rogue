@@ -3,8 +3,7 @@
 import SwiftUI
 
 @Observable
-final class ChatViewModel {
-    var inputText = ""
+final class ChatViewModel: @unchecked Sendable {
     var isStreaming = false
     var bubbles: [ACPBubble] = []
     var error: String?
@@ -18,15 +17,15 @@ final class ChatViewModel {
     }
 
     @MainActor
-    func sendMessage() async {
-        let text = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !text.isEmpty, let client = connector.aclClient else { return }
+    func sendMessage(_ text: String) async {
+        guard let client = connector.aclClient else { return }
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
 
-        inputText = ""
         error = nil
         isStreaming = true
 
-        bubbles.append(ACPBubble(type: "user", content: text, name: nil, arguments: nil))
+        bubbles.append(ACPBubble(type: "user", content: trimmed, name: nil, arguments: nil))
 
         if thread.sessionID == nil || !connector.isConnected {
             do {
@@ -47,7 +46,7 @@ final class ChatViewModel {
         }
 
         do {
-            try await client.sendPrompt(text)
+            try await client.sendPrompt(trimmed)
         } catch {
             self.error = error.localizedDescription
         }
@@ -57,7 +56,7 @@ final class ChatViewModel {
 
     func cancel() {
         Task {
-            try? await connector.aclClient?.cancel()
+            try? await connector.aclClient?.cancelPrompt()
             isStreaming = false
         }
     }

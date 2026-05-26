@@ -4,7 +4,7 @@ import SwiftUI
 import Foundation
 
 @Observable
-final class GatewayConnector {
+final class GatewayConnector: @unchecked Sendable {
     var gateways: [Gateway] = []
     var activeGatewayID: String?
     var aclClient: ACPClient?
@@ -31,7 +31,7 @@ final class GatewayConnector {
         aclClient?.disconnect()
         let client = ACPClient(url: gateway.url, token: gateway.token)
         do {
-            try await client.connect { _ in }
+            try await client.connect { @Sendable _ in }
             aclClient = client
             isConnected = true
             activeGatewayID = gateway.id

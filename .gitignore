@@ -57,9 +57,12 @@ npm-debug.log*
 .nuxt/
 dist/
 
-# ── Rust ──
-target/
-Cargo.lock.bak
+# ── Swift / Xcode ──
+.build/
+*.xcodeproj/
+*.xcworkspace/
+DerivedData/
+Pods/
 
 # ── Editors + IDE ──
 .vscode/
