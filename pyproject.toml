@@ -59,6 +59,7 @@ module = [
     "aiosqlite",
     "pydantic_settings",
     "boto3",
+    "botocore.*",
     "botocore",
     "websockets",
 ]
